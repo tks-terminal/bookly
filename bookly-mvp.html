@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bookly — Your personal booking page</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Nacelle:wght@300;400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a24;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #f0eff8;
+  --text2: #9896b0;
+  --text3: #5a5870;
+  --accent: #7c6cfc;
+  --accent2: #a99dfd;
+  --accent-bg: rgba(124,108,252,0.12);
+  --accent-border: rgba(124,108,252,0.3);
+  --green: #3ecf8e;
+  --green-bg: rgba(62,207,142,0.1);
+  --green-border: rgba(62,207,142,0.25);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.1);
+  --gold: #f59e0b;
+  --gold-bg: rgba(245,158,11,0.1);
+  --radius: 12px;
+  --radius-lg: 18px;
+  --ff-display: 'Syne', sans-serif;
+  --ff-body: 'Lato', sans-serif;
+  --ff-mono: 'DM Mono', monospace;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: var(--ff-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-weight: 300;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:1000;
+  opacity:0.4;
+}
+
+/* ── NAV ── */
+nav {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:1.25rem 2.5rem;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  background:rgba(10,10,15,0.85);
+  backdrop-filter:blur(12px);
+  z-index:200;
+}
+.logo {
+  font-family:var(--ff-display);
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:-0.02em;
+  color:var(--text);
+}
+.logo span { color:var(--accent2); }
+.nav-right { display:flex; align-items:center; gap:12px; }
+.btn-ghost {
+  font-family:var(--ff-body);
+  font-size:13px;
+  color:var(--text2);
+  background:none;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:6px 16px;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-ghost:hover { border-color:var(--border2); color:var(--text); }
+.btn-accent {
+  font-family:var(--ff-body);
+  font-size:13px;
+  font-weight:400;
+  color:white;
+  background:var(--accent);
+  border:none;
+  border-radius:8px;
+  padding:7px 18px;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-accent:hover { background:#6a5ae0; }
+
+/* ── VIEWS ── */
+.view { display:none; }
+.view.active { display:block; }
+
+/* ══════════════════════════════════
+   LANDING / HERO
+══════════════════════════════════ */
+.hero {
+  max-width:800px;
+  margin:0 auto;
+  padding:6rem 2rem 4rem;
+  text-align:center;
+}
+.hero-pill {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  font-weight:400;
+  font-family:var(--ff-mono);
+  color:var(--accent2);
+  background:var(--accent-bg);
+  border:1px solid var(--accent-border);
+  border-radius:20px;
+  padding:4px 14px;
+  margin-bottom:2rem;
+  letter-spacing:0.04em;
+}
+.hero h1 {
+  font-family:var(--ff-display);
+  font-size:clamp(2.8rem,6vw,5rem);
+  font-weight:700;
+  line-height:1.0;
+  letter-spacing:-0.04em;
+  color:var(--text);
+  margin-bottom:1.5rem;
+}
+.hero h1 .highlight {
+  color:transparent;
+  background:linear-gradient(135deg, var(--accent2) 0%, var(--green) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+.hero p {
+  font-size:1.1rem;
+  color:var(--text2);
+  max-width:480px;
+  margin:0 auto 2.5rem;
+  line-height:1.7;
+}
+.hero-cta {
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:4rem;
+}
+.btn-big {
+  font-family:var(--ff-display);
+  font-size:15px;
+  font-weight:600;
+  padding:14px 32px;
+  border-radius:10px;
+  cursor:pointer;
+  border:none;
+  transition:all 0.2s;
+  letter-spacing:-0.01em;
+}
+.btn-big-accent {
+  background:var(--accent);
+  color:white;
+}
+.btn-big-accent:hover { background:#6a5ae0; transform:translateY(-1px); }
+.btn-big-ghost {
+  background:var(--bg3);
+  color:var(--text2);
+  border:1px solid var(--border2);
+}
+.btn-big-ghost:hover { color:var(--text); border-color:rgba(255,255,255,0.25); }
+
+/* Demo preview card */
+.demo-preview {
+  max-width:440px;
+  margin:0 auto;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  animation: floatUp 0.6s ease both;
+}
+@keyframes floatUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+.demo-preview-header {
+  background:var(--bg3);
+  padding:1rem 1.25rem;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid var(--border);
+}
+.demo-avatar {
+  width:38px;height:38px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--green));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--ff-display);
+  font-weight:700;font-size:14px;color:white;
+  flex-shrink:0;
+}
+.demo-name { font-family:var(--ff-display); font-weight:600; font-size:14px; }
+.demo-role { font-size:11px; color:var(--text3); }
+.demo-body { padding:1.25rem; }
+.demo-event {
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:1rem;
+  margin-bottom:10px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  cursor:pointer;
+  transition:border-color 0.15s;
+}
+.demo-event:hover { border-color:var(--accent-border); }
+.demo-event-dot {
+  width:10px;height:10px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.demo-event-title { font-size:13px; font-weight:400; margin-bottom:2px; }
+.demo-event-meta { font-size:11px; color:var(--text3); font-family:var(--ff-mono); }
+.demo-url {
+  text-align:center;
+  font-family:var(--ff-mono);
+  font-size:11px;
+  color:var(--text3);
+  padding-top:0.75rem;
+  border-top:1px solid var(--border);
+  margin-top:0.5rem;
+}
+.demo-url span { color:var(--accent2); }
+
+/* Features */
+.features-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:16px;
+  max-width:900px;
+  margin:5rem auto 2rem;
+  padding:0 2rem;
+}
+.feature-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  animation: floatUp 0.5s ease both;
+}
+.feature-icon {
+  font-size:24px;
+  margin-bottom:0.75rem;
+  display:block;
+}
+.feature-title {
+  font-family:var(--ff-display);
+  font-weight:600;
+  font-size:15px;
+  margin-bottom:0.4rem;
+  color:var(--text);
+}
+.feature-desc { font-size:13px; color:var(--text2); line-height:1.6; }
+
+/* Pricing */
+.pricing-section {
+  max-width:820px;
+  margin:4rem auto;
+  padding:0 2rem;
+  text-align:center;
+}
+.section-label {
+  font-family:var(--ff-mono);
+  font-size:11px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:1rem;
+}
+.section-title {
+  font-family:var(--ff-display);
+  font-size:clamp(1.8rem,4vw,2.8rem);
+  font-weight:700;
+  letter-spacing:-0.03em;
+  margin-bottom:0.75rem;
+}
+.pricing-cards {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+  margin-top:2.5rem;
+  text-align:left;
+}
+.pricing-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:1.75rem;
+  position:relative;
+  transition:border-color 0.2s;
+}
+.pricing-card:hover { border-color:var(--border2); }
+.pricing-card.featured {
+  border-color:var(--accent-border);
+  background:rgba(124,108,252,0.06);
+}
+.pricing-popular {
+  position:absolute;
+  top:-11px;left:50%;transform:translateX(-50%);
+  font-family:var(--ff-mono);
+  font-size:10px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  background:var(--accent);
+  color:white;
+  padding:3px 14px;
+  border-radius:20px;
+  white-space:nowrap;
+}
+.pricing-tier { font-size:12px; color:var(--text3); font-family:var(--ff-mono); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; }
+.pricing-price {
+  font-family:var(--ff-display);
+  font-size:2.5rem;
+  font-weight:700;
+  letter-spacing:-0.04em;
+  color:var(--text);
+  margin-bottom:0.25rem;
+}
+.pricing-price sup { font-size:1.2rem; vertical-align:super; }
+.pricing-price sub { font-size:0.9rem; color:var(--text3); font-family:var(--ff-body); font-weight:300; }
+.pricing-desc { font-size:13px; color:var(--text2); margin-bottom:1.5rem; }
+.pricing-features { display:flex; flex-direction:column; gap:8px; margin-bottom:1.75rem; }
+.pricing-feature {
+  font-size:13px;
+  color:var(--text2);
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+}
+.pricing-feature::before { content:'✓'; color:var(--green); font-weight:400; flex-shrink:0; margin-top:1px; }
+.pricing-feature.locked { color:var(--text3); }
+.pricing-feature.locked::before { content:'—'; color:var(--text3); }
+.pricing-btn {
+  width:100%;
+  padding:0.875rem;
+  border-radius:10px;
+  font-family:var(--ff-display);
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+  transition:all 0.15s;
+}
+.pricing-btn-outline {
+  background:none;
+  border:1px solid var(--border2);
+  color:var(--text2);
+}
+.pricing-btn-outline:hover { border-color:rgba(255,255,255,0.3); color:var(--text); }
+.pricing-btn-filled {
+  background:var(--accent);
+  color:white;
+}
+.pricing-btn-filled:hover { background:#6a5ae0; }
+
+/* ══════════════════════════════════
+   DASHBOARD
+══════════════════════════════════ */
+.dashboard {
+  max-width:960px;
+  margin:0 auto;
+  padding:2.5rem 1.5rem;
+}
+.dash-header {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  margin-bottom:2rem;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.dash-greeting { font-family:var(--ff-display); font-size:1.6rem; font-weight:700; letter-spacing:-0.02em; }
+.dash-sub { font-size:14px; color:var(--text2); margin-top:4px; }
+
+.booking-link-bar {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem 1.25rem;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:1.75rem;
+  flex-wrap:wrap;
+}
+.booking-link-label { font-size:12px; color:var(--text3); font-family:var(--ff-mono); flex-shrink:0; }
+.booking-link-url {
+  font-family:var(--ff-mono);
+  font-size:13px;
+  color:var(--accent2);
+  flex:1;
+  min-width:200px;
+}
+.copy-btn {
+  font-family:var(--ff-mono);
+  font-size:11px;
+  padding:5px 14px;
+  border-radius:6px;
+  border:1px solid var(--accent-border);
+  background:var(--accent-bg);
+  color:var(--accent2);
+  cursor:pointer;
+  transition:all 0.15s;
+  flex-shrink:0;
+}
+.copy-btn:hover { background:rgba(124,108,252,0.2); }
+
+.stats-row {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  margin-bottom:1.75rem;
+}
+.stat-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.25rem;
+}
+.stat-label { font-size:11px; color:var(--text3); font-family:var(--ff-mono); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }
+.stat-value { font-family:var(--ff-display); font-size:1.75rem; font-weight:700; letter-spacing:-0.03em; }
+.stat-change { font-size:11px; color:var(--green); margin-top:4px; }
+
+.section-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:1rem;
+}
+.section-head-title { font-family:var(--ff-display); font-size:1rem; font-weight:600; }
+
+/* Event type cards */
+.event-types { display:flex; flex-direction:column; gap:10px; margin-bottom:2rem; }
+.event-type-card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.25rem 1.5rem;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  transition:border-color 0.15s;
+  cursor:pointer;
+}
+.event-type-card:hover { border-color:var(--border2); }
+.event-color-dot { width:12px;height:12px;border-radius:50%;flex-shrink:0; }
+.event-type-info { flex:1; }
+.event-type-name { font-size:15px; font-weight:400; margin-bottom:2px; }
+.event-type-meta { font-size:12px; color:var(--text3); font-family:var(--ff-mono); }
+.event-type-stats { font-size:12px; color:var(--text2); text-align:right; }
+.event-type-count { font-family:var(--ff-display); font-weight:600; font-size:1.1rem; }
+.event-badge {
+  font-size:10px;
+  padding:3px 10px;
+  border-radius:20px;
+  font-family:var(--ff-mono);
+  letter-spacing:0.04em;
+}
+.badge-free { background:var(--bg3); color:var(--text3); border:1px solid var(--border); }
+.badge-pro { background:var(--accent-bg); color:var(--accent2); border:1px solid var(--accent-border); }
+
+/* Upcoming bookings */
+.bookings-list { display:flex; flex-direction:column; gap:10px; margin-bottom:2rem; }
+.booking-item {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem 1.25rem;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.booking-time {
+  font-family:var(--ff-mono);
+  font-size:12px;
+  color:var(--accent2);
+  width:110px;
+  flex-shrink:0;
+}
+.booking-guest { font-size:14px; }
+.booking-event { font-size:12px; color:var(--text3); }
+.booking-actions { margin-left:auto; display:flex; gap:8px; }
+.action-btn {
+  font-size:11px;
+  padding:4px 12px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  background:none;
+  color:var(--text3);
+  cursor:pointer;
+  transition:all 0.15s;
+  font-family:var(--ff-body);
+}
+.action-btn:hover { border-color:var(--border2); color:var(--text2); }
+.action-btn.danger:hover { border-color:rgba(248,113,113,0.3); color:var(--red); }
+
+/* Paywall banner */
+.paywall-banner {
+  background:linear-gradient(135deg, rgba(124,108,252,0.12) 0%, rgba(62,207,142,0.08) 100%);
+  border:1px solid var(--accent-border);
+  border-radius:var(--radius-lg);
+  padding:2rem;
+  display:flex;
+  align-items:center;
+  gap:1.5rem;
+  flex-wrap:wrap;
+  margin-bottom:2rem;
+}
+.paywall-icon { font-size:2rem; flex-shrink:0; }
+.paywall-text h3 { font-family:var(--ff-display); font-weight:700; font-size:1.1rem; margin-bottom:4px; }
+.paywall-text p { font-size:13px; color:var(--text2); }
+.paywall-locked-features {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+.locked-tag {
+  font-size:11px;
+  font-family:var(--ff-mono);
+  color:var(--text3);
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:3px 10px;
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+.locked-tag::before { content:'🔒'; font-size:9px; }
+
+/* ══════════════════════════════════
+   BOOKING PAGE (public view)
+══════════════════════════════════ */
+.booking-page {
+  max-width:820px;
+  margin:0 auto;
+  padding:2.5rem 1.5rem;
+  display:grid;
+  grid-template-columns:280px 1fr;
+  gap:2rem;
+  align-items:start;
+}
+@media(max-width:640px){
+  .booking-page { grid-template-columns:1fr; }
+}
+.booking-host {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:1.75rem;
+  position:sticky;
+  top:80px;
+}
+.host-avatar {
+  width:64px;height:64px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--green));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--ff-display);font-weight:700;font-size:22px;color:white;
+  margin-bottom:1rem;
+}
+.host-name { font-family:var(--ff-display); font-size:1.25rem; font-weight:700; letter-spacing:-0.02em; }
+.host-title { font-size:13px; color:var(--text2); margin-bottom:1rem; }
+.host-bio { font-size:13px; color:var(--text2); line-height:1.6; padding-top:1rem; border-top:1px solid var(--border); }
+
+.booking-right {}
+.event-select { margin-bottom:1.5rem; }
+.event-select-title { font-family:var(--ff-display); font-size:1rem; font-weight:600; margin-bottom:0.875rem; color:var(--text2); font-size:13px; text-transform:uppercase; letter-spacing:0.06em; font-family:var(--ff-mono); }
+.event-option {
+  background:var(--bg2);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem 1.25rem;
+  margin-bottom:8px;
+  cursor:pointer;
+  transition:all 0.15s;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.event-option:hover { border-color:var(--border2); }
+.event-option.selected { border-color:var(--accent-border); background:var(--accent-bg); }
+.event-option-name { font-size:14px; font-weight:400; }
+.event-option-dur { font-size:12px; color:var(--text3); font-family:var(--ff-mono); }
+
+/* Calendar */
+.calendar-wrap {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:1.5rem;
+  margin-bottom:1rem;
+}
+.cal-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:1.25rem;
+}
+.cal-month { font-family:var(--ff-display); font-weight:600; font-size:1rem; }
+.cal-nav {
+  background:none;
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--text2);
+  width:30px;height:30px;
+  cursor:pointer;
+  font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.cal-nav:hover { border-color:var(--border2); color:var(--text); }
+.cal-grid {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+}
+.cal-day-name {
+  text-align:center;
+  font-size:11px;
+  font-family:var(--ff-mono);
+  color:var(--text3);
+  padding-bottom:8px;
+}
+.cal-day {
+  aspect-ratio:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  font-size:13px;
+  cursor:pointer;
+  transition:all 0.15s;
+  color:var(--text2);
+  border:1px solid transparent;
+}
+.cal-day:hover:not(.empty):not(.past) { background:var(--bg3); color:var(--text); }
+.cal-day.today { color:var(--accent2); font-weight:500; }
+.cal-day.selected { background:var(--accent); color:white; border-color:var(--accent); }
+.cal-day.has-slots { position:relative; }
+.cal-day.has-slots::after {
+  content:'';
+  position:absolute;
+  bottom:3px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;
+  border-radius:50%;
+  background:var(--green);
+}
+.cal-day.past { color:var(--text3); cursor:default; opacity:0.4; }
+.cal-day.empty { cursor:default; }
+
+/* Time slots */
+.slots-wrap {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:1.5rem;
+  margin-bottom:1rem;
+}
+.slots-title { font-family:var(--ff-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text3); margin-bottom:1rem; }
+.slots-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.slot-btn {
+  padding:10px 6px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:none;
+  color:var(--text2);
+  font-family:var(--ff-mono);
+  font-size:12px;
+  cursor:pointer;
+  transition:all 0.15s;
+  text-align:center;
+}
+.slot-btn:hover { border-color:var(--accent-border); color:var(--accent2); background:var(--accent-bg); }
+.slot-btn.selected { background:var(--accent); color:white; border-color:var(--accent); }
+
+/* Booking form */
+.booking-form-wrap {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:1.5rem;
+}
+.form-title { font-family:var(--ff-display); font-size:1rem; font-weight:600; margin-bottom:1.25rem; }
+.form-group { margin-bottom:1rem; }
+.form-label { font-size:12px; color:var(--text3); font-family:var(--ff-mono); text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:6px; }
+.form-input {
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 14px;
+  font-family:var(--ff-body);
+  font-size:14px;
+  font-weight:300;
+  color:var(--text);
+  outline:none;
+  transition:border-color 0.15s;
+}
+.form-input:focus { border-color:var(--accent-border); }
+.form-input::placeholder { color:var(--text3); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media(max-width:480px){ .form-row { grid-template-columns:1fr; } }
+.submit-btn {
+  width:100%;
+  padding:1rem;
+  background:var(--accent);
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-family:var(--ff-display);
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.15s;
+  margin-top:0.5rem;
+  letter-spacing:-0.01em;
+}
+.submit-btn:hover { background:#6a5ae0; transform:translateY(-1px); }
+.submit-btn:disabled { opacity:0.5; transform:none; cursor:not-allowed; }
+
+/* Confirmation */
+.confirm-wrap {
+  text-align:center;
+  padding:3rem 1.5rem;
+  display:none;
+}
+.confirm-icon { font-size:3.5rem; margin-bottom:1rem; }
+.confirm-title { font-family:var(--ff-display); font-size:1.75rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:0.75rem; }
+.confirm-detail { font-size:14px; color:var(--text2); margin-bottom:0.4rem; }
+.confirm-box {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  max-width:380px;
+  margin:1.5rem auto;
+  text-align:left;
+}
+.confirm-row { display:flex; justify-content:space-between; font-size:13px; padding:5px 0; }
+.confirm-row-label { color:var(--text3); }
+.confirm-row-val { color:var(--text); font-family:var(--ff-mono); }
+
+/* Modal */
+.modal-backdrop {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(5,5,10,0.8);
+  z-index:500;
+  align-items:center;
+  justify-content:center;
+  padding:1rem;
+  backdrop-filter:blur(4px);
+}
+.modal-backdrop.open { display:flex; }
+.modal {
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-lg);
+  padding:2.5rem;
+  max-width:460px;
+  width:100%;
+  position:relative;
+  animation:modalIn 0.2s ease;
+}
+@keyframes modalIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+.modal-x {
+  position:absolute;top:1.25rem;right:1.25rem;
+  background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;transition:all 0.15s;
+}
+.modal-x:hover { background:var(--bg3); color:var(--text2); }
+.modal h2 { font-family:var(--ff-display); font-size:1.6rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:0.5rem; }
+.modal-sub { font-size:13px; color:var(--text2); margin-bottom:2rem; }
+.modal-foot { font-size:11px; color:var(--text3); text-align:center; margin-top:0.875rem; }
+
+#toast {
+  position:fixed;bottom:2rem;right:2rem;
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  color:var(--text);
+  padding:0.875rem 1.25rem;
+  border-radius:10px;
+  font-size:13px;
+  transform:translateY(60px);opacity:0;
+  transition:all 0.25s;
+  z-index:999;
+  max-width:280px;
+}
+#toast.show { transform:none;opacity:1; }
+
+.divider { height:1px;background:var(--border);margin:1.5rem 0; }
+
+@media(max-width:640px){
+  nav { padding:1rem 1.25rem; }
+  .hero { padding:3.5rem 1.25rem 3rem; }
+  .features-grid,.pricing-cards { padding:0 1.25rem; }
+  .dashboard,.booking-page { padding:1.5rem 1rem; }
+  .slots-grid { grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Book<span>ly</span></div>
+  <div class="nav-right">
+    <button class="btn-ghost" onclick="showView('booking')">Preview booking page</button>
+    <button class="btn-ghost" onclick="showView('landing')">Home</button>
+    <button class="btn-accent" onclick="showView('dashboard')">Dashboard →</button>
+  </div>
+</nav>
+
+<!-- ══ LANDING ══ -->
+<div id="view-landing" class="view active">
+  <div class="hero">
+    <div class="hero-pill">✦ Zero setup · No credit card</div>
+    <h1>Your booking page,<br><span class="highlight">live in 60 seconds</span></h1>
+    <p>Share one link. Let clients book your time, pay you, and get automatic reminders — without Calendly's prices.</p>
+    <div class="hero-cta">
+      <button class="btn-big btn-big-accent" onclick="showView('dashboard')">Create your page →</button>
+      <button class="btn-big btn-big-ghost" onclick="showView('booking')">See a demo booking page</button>
+    </div>
+    <div class="demo-preview">
+      <div class="demo-preview-header">
+        <div class="demo-avatar">JD</div>
+        <div>
+          <div class="demo-name">Jordan Davis</div>
+          <div class="demo-role">UX Consultant · bookly.io/jordan</div>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-event" onclick="showView('booking')">
+          <div class="demo-event-dot" style="background:#7c6cfc"></div>
+          <div>
+            <div class="demo-event-title">30-min intro call</div>
+            <div class="demo-event-meta">30 min · Free</div>
+          </div>
+        </div>
+        <div class="demo-event" onclick="showView('booking')">
+          <div class="demo-event-dot" style="background:#3ecf8e"></div>
+          <div>
+            <div class="demo-event-title">UX audit session</div>
+            <div class="demo-event-meta">60 min · $150</div>
+          </div>
+        </div>
+        <div class="demo-url">bookly.io/<span>jordan</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card" style="animation-delay:0.1s">
+      <span class="feature-icon">⚡</span>
+      <div class="feature-title">Share one link</div>
+      <div class="feature-desc">Get a clean bookly.io/yourname URL. Share it anywhere — email signature, Instagram bio, LinkedIn.</div>
+    </div>
+    <div class="feature-card" style="animation-delay:0.2s">
+      <span class="feature-icon">💳</span>
+      <div class="feature-title">Get paid upfront</div>
+      <div class="feature-desc">Charge for sessions directly on the booking page. No more chasing invoices after the meeting.</div>
+    </div>
+    <div class="feature-card" style="animation-delay:0.3s">
+      <span class="feature-icon">📬</span>
+      <div class="feature-title">Auto reminders</div>
+      <div class="feature-desc">Guests get confirmation emails and 24-hour reminders automatically. No-shows drop dramatically.</div>
+    </div>
+    <div class="feature-card" style="animation-delay:0.4s">
+      <span class="feature-icon">🗓️</span>
+      <div class="feature-title">Calendar sync</div>
+      <div class="feature-desc">Connect Google or Outlook. Bookly reads your availability in real time so you never double-book.</div>
+    </div>
+    <div class="feature-card" style="animation-delay:0.5s">
+      <span class="feature-icon">🎨</span>
+      <div class="feature-title">Your brand</div>
+      <div class="feature-desc">Custom colors, photo, and bio. Pro removes the Bookly branding so it feels 100% yours.</div>
+    </div>
+    <div class="feature-card" style="animation-delay:0.6s">
+      <span class="feature-icon">📊</span>
+      <div class="feature-title">Booking analytics</div>
+      <div class="feature-desc">See which event types get booked most, peak booking times, and your conversion rate.</div>
+    </div>
+  </div>
+
+  <div class="pricing-section">
+    <div class="section-label">Pricing</div>
+    <div class="section-title">Simple, honest pricing</div>
+    <p style="color:var(--text2);font-size:14px;">Calendly charges $10/mo just to remove their logo. We don't do that.</p>
+    <div class="pricing-cards">
+      <div class="pricing-card">
+        <div class="pricing-tier">Free</div>
+        <div class="pricing-price"><sup>$</sup>0<sub>/forever</sub></div>
+        <div class="pricing-desc">Get started in 60 seconds</div>
+        <div class="pricing-features">
+          <div class="pricing-feature">1 event type</div>
+          <div class="pricing-feature">Unlimited bookings</div>
+          <div class="pricing-feature">Booking confirmation emails</div>
+          <div class="pricing-feature locked">Payment collection</div>
+          <div class="pricing-feature locked">Auto reminders</div>
+          <div class="pricing-feature locked">Remove Bookly branding</div>
+        </div>
+        <button class="pricing-btn pricing-btn-outline" onclick="showView('dashboard')">Get started free</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-popular">Most popular</div>
+        <div class="pricing-tier">Pro</div>
+        <div class="pricing-price"><sup>$</sup>8<sub>/mo</sub></div>
+        <div class="pricing-desc">For freelancers & coaches</div>
+        <div class="pricing-features">
+          <div class="pricing-feature">Unlimited event types</div>
+          <div class="pricing-feature">Unlimited bookings</div>
+          <div class="pricing-feature">Payment collection via Stripe</div>
+          <div class="pricing-feature">Auto email reminders</div>
+          <div class="pricing-feature">Remove Bookly branding</div>
+          <div class="pricing-feature">Custom colors & bio</div>
+        </div>
+        <button class="pricing-btn pricing-btn-filled" onclick="openModal()">Start 7-day free trial</button>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">Team</div>
+        <div class="pricing-price"><sup>$</sup>24<sub>/mo</sub></div>
+        <div class="pricing-desc">For small teams</div>
+        <div class="pricing-features">
+          <div class="pricing-feature">Everything in Pro</div>
+          <div class="pricing-feature">Up to 5 team members</div>
+          <div class="pricing-feature">Round-robin scheduling</div>
+          <div class="pricing-feature">Team analytics</div>
+          <div class="pricing-feature">Priority support</div>
+        </div>
+        <button class="pricing-btn pricing-btn-outline" onclick="openModal()">Start free trial</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="view-dashboard" class="view">
+  <div class="dashboard">
+    <div class="dash-header">
+      <div>
+        <div class="dash-greeting">Good morning, Jordan 👋</div>
+        <div class="dash-sub">Here's what's happening with your bookings</div>
+      </div>
+      <button class="btn-accent" onclick="showView('booking')">Preview my page →</button>
+    </div>
+
+    <div class="booking-link-bar">
+      <span class="booking-link-label">Your link</span>
+      <span class="booking-link-url">bookly.io/jordan</span>
+      <button class="copy-btn" onclick="copyLink()">Copy link</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">This month</div>
+        <div class="stat-value">24</div>
+        <div class="stat-change">↑ 6 from last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Upcoming</div>
+        <div class="stat-value">7</div>
+        <div class="stat-change" style="color:var(--accent2)">Next in 2 days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Revenue</div>
+        <div class="stat-value" style="color:var(--text3);font-size:1.2rem;padding-top:6px;">Locked</div>
+        <div class="stat-change" style="color:var(--text3);">Pro feature</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Views</div>
+        <div class="stat-value">183</div>
+        <div class="stat-change">↑ 12% this week</div>
+      </div>
+    </div>
+
+    <!-- Paywall Banner -->
+    <div class="paywall-banner">
+      <div class="paywall-icon">✦</div>
+      <div class="paywall-text" style="flex:1">
+        <h3>Unlock Pro — $8/mo</h3>
+        <p>You're on the free plan. Upgrade to collect payments, send reminders, and remove Bookly branding.</p>
+        <div class="paywall-locked-features">
+          <span class="locked-tag">Payment collection</span>
+          <span class="locked-tag">Auto reminders</span>
+          <span class="locked-tag">Unlimited event types</span>
+          <span class="locked-tag">Custom branding</span>
+          <span class="locked-tag">Analytics</span>
+        </div>
+      </div>
+      <button class="btn-accent" onclick="openModal()">Upgrade →</button>
+    </div>
+
+    <div class="section-head">
+      <div class="section-head-title">Your event types</div>
+      <button class="btn-ghost" onclick="showAddEvent()">+ Add event</button>
+    </div>
+    <div class="event-types">
+      <div class="event-type-card">
+        <div class="event-color-dot" style="background:#7c6cfc"></div>
+        <div class="event-type-info">
+          <div class="event-type-name">30-min intro call</div>
+          <div class="event-type-meta">30 min · Free · bookly.io/jordan/intro</div>
+        </div>
+        <span class="event-badge badge-free">Free plan</span>
+        <div class="event-type-stats">
+          <div class="event-type-count">18</div>
+          <div style="font-size:11px;color:var(--text3)">bookings</div>
+        </div>
+      </div>
+      <div class="event-type-card" style="opacity:0.5;cursor:not-allowed;" onclick="openModal()">
+        <div class="event-color-dot" style="background:#3ecf8e"></div>
+        <div class="event-type-info">
+          <div class="event-type-name">UX audit session 🔒</div>
+          <div class="event-type-meta">60 min · $150 · Pro required</div>
+        </div>
+        <span class="event-badge badge-pro">Pro</span>
+        <div class="event-type-stats">
+          <div style="font-size:11px;color:var(--text3)">Locked</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-head-title">Upcoming bookings</div>
+    </div>
+    <div class="bookings-list">
+      <div class="booking-item">
+        <div class="booking-time">Jun 3 · 10:00am</div>
+        <div>
+          <div class="booking-guest">Sarah K.</div>
+          <div class="booking-event">30-min intro call</div>
+        </div>
+        <div class="booking-actions">
+          <button class="action-btn">Details</button>
+          <button class="action-btn danger">Cancel</button>
+        </div>
+      </div>
+      <div class="booking-item">
+        <div class="booking-time">Jun 5 · 2:00pm</div>
+        <div>
+          <div class="booking-guest">Mike T.</div>
+          <div class="booking-event">30-min intro call</div>
+        </div>
+        <div class="booking-actions">
+          <button class="action-btn">Details</button>
+          <button class="action-btn danger">Cancel</button>
+        </div>
+      </div>
+      <div class="booking-item">
+        <div class="booking-time">Jun 8 · 11:00am</div>
+        <div>
+          <div class="booking-guest">Priya M.</div>
+          <div class="booking-event">30-min intro call</div>
+        </div>
+        <div class="booking-actions">
+          <button class="action-btn">Details</button>
+          <button class="action-btn danger">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PUBLIC BOOKING PAGE ══ -->
+<div id="view-booking" class="view">
+  <div id="bookingMain">
+    <div class="booking-page">
+      <div class="booking-host">
+        <div class="host-avatar">JD</div>
+        <div class="host-name">Jordan Davis</div>
+        <div class="host-title">UX Consultant & Product Designer</div>
+        <div class="host-bio">I help startups and growing teams design products people actually enjoy using. 8 years in UX, worked with 50+ companies. Book a call and let's talk about your product.</div>
+      </div>
+      <div class="booking-right">
+        <div class="event-select">
+          <div class="event-select-title">Choose a session type</div>
+          <div class="event-option selected" onclick="selectEvent(this,'intro')">
+            <div class="event-color-dot" style="background:#7c6cfc;width:10px;height:10px;border-radius:50%;flex-shrink:0;"></div>
+            <div>
+              <div class="event-option-name">30-min intro call</div>
+              <div class="event-option-dur">30 min · Free</div>
+            </div>
+          </div>
+          <div class="event-option" onclick="selectEvent(this,'audit')">
+            <div class="event-color-dot" style="background:#3ecf8e;width:10px;height:10px;border-radius:50%;flex-shrink:0;"></div>
+            <div>
+              <div class="event-option-name">UX audit session</div>
+              <div class="event-option-dur">60 min · $150</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="calendar-wrap">
+          <div class="cal-header">
+            <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+            <div class="cal-month" id="calMonth">June 2026</div>
+            <button class="cal-nav" onclick="changeMonth(1)">›</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <div class="slots-wrap" id="slotsWrap" style="display:none">
+          <div class="slots-title" id="slotsTitle">Available times</div>
+          <div class="slots-grid" id="slotsGrid"></div>
+        </div>
+
+        <div class="booking-form-wrap" id="bookingFormWrap" style="display:none">
+          <div class="form-title">Your details</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First name</label>
+              <input class="form-input" type="text" placeholder="Alex" id="fname">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last name</label>
+              <input class="form-input" type="text" placeholder="Chen" id="lname">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" placeholder="alex@company.com" id="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">What would you like to discuss? <span style="color:var(--text3)">(optional)</span></label>
+            <textarea class="form-input" rows="3" placeholder="Give Jordan a heads-up about your project or questions..." id="notes" style="resize:vertical"></textarea>
+          </div>
+          <button class="submit-btn" onclick="confirmBooking()">Confirm booking →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="confirm-wrap" id="confirmWrap">
+    <div class="confirm-icon">🎉</div>
+    <div class="confirm-title">You're booked!</div>
+    <p class="confirm-detail">A confirmation has been sent to your email.</p>
+    <div class="confirm-box">
+      <div class="confirm-row"><span class="confirm-row-label">Host</span><span class="confirm-row-val">Jordan Davis</span></div>
+      <div class="confirm-row"><span class="confirm-row-label">Session</span><span class="confirm-row-val" id="confSession">—</span></div>
+      <div class="confirm-row"><span class="confirm-row-label">Date</span><span class="confirm-row-val" id="confDate">—</span></div>
+      <div class="confirm-row"><span class="confirm-row-label">Time</span><span class="confirm-row-val" id="confTime">—</span></div>
+      <div class="confirm-row"><span class="confirm-row-label">Email</span><span class="confirm-row-val" id="confEmail">—</span></div>
+    </div>
+    <button class="btn-accent" onclick="showView('landing')" style="padding:12px 28px;font-size:14px;">Create your own booking page →</button>
+  </div>
+</div>
+
+<!-- Pricing Modal -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">×</button>
+    <h2>Go Pro — $8/mo</h2>
+    <p class="modal-sub">Unlock payments, reminders, unlimited event types, and custom branding. 7-day free trial, cancel any time.</p>
+    <div class="pricing-features" style="margin-bottom:1.5rem">
+      <div class="pricing-feature">Collect Stripe payments on any session</div>
+      <div class="pricing-feature">Automatic email reminders (24hr + 1hr before)</div>
+      <div class="pricing-feature">Unlimited event types</div>
+      <div class="pricing-feature">Remove Bookly branding</div>
+      <div class="pricing-feature">Custom page colors and photo</div>
+      <div class="pricing-feature">Monthly booking analytics</div>
+    </div>
+    <button class="pricing-btn pricing-btn-filled" style="border-radius:10px;font-size:15px;padding:1rem;" onclick="mockPay()">Start free trial → then $8/mo</button>
+    <div class="modal-foot">🔒 Stripe-secured · Cancel any time · 7-day money-back guarantee</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── VIEW SWITCHING ──
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── CALENDAR ──
+let currentMonth = 5; // June (0-indexed)
+let currentYear = 2026;
+let selectedDay = null;
+let selectedSlot = null;
+let selectedEventType = 'intro';
+
+const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// Days with available slots (simulate)
+const availableDays = [3,5,8,10,12,15,17,19,22,24,26,29];
+
+function renderCalendar() {
+  document.getElementById('calMonth').textContent = monthNames[currentMonth] + ' ' + currentYear;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  dayNames.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-day-name';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+  const today = new Date();
+  for(let i=0;i<firstDay;i++){
+    const el=document.createElement('div');
+    el.className='cal-day empty';
+    grid.appendChild(el);
+  }
+  for(let d=1;d<=daysInMonth;d++){
+    const el=document.createElement('div');
+    const isPast = currentYear < today.getFullYear() || (currentYear===today.getFullYear() && currentMonth < today.getMonth()) || (currentYear===today.getFullYear() && currentMonth===today.getMonth() && d < today.getDate());
+    const isToday = d===today.getDate() && currentMonth===today.getMonth() && currentYear===today.getFullYear();
+    const hasSlots = availableDays.includes(d) && !isPast;
+    el.className = 'cal-day' + (isPast?' past':'') + (isToday?' today':'') + (hasSlots?' has-slots':'') + (d===selectedDay?' selected':'');
+    el.textContent = d;
+    if(!isPast && hasSlots) el.onclick = () => selectDay(d);
+    grid.appendChild(el);
+  }
+}
+
+function changeMonth(dir) {
+  currentMonth += dir;
+  if(currentMonth > 11){currentMonth=0;currentYear++;}
+  if(currentMonth < 0){currentMonth=11;currentYear--;}
+  selectedDay=null; selectedSlot=null;
+  document.getElementById('slotsWrap').style.display='none';
+  document.getElementById('bookingFormWrap').style.display='none';
+  renderCalendar();
+}
+
+const times = ['9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM'];
+
+function selectDay(d) {
+  selectedDay = d;
+  selectedSlot = null;
+  renderCalendar();
+  const wrap = document.getElementById('slotsWrap');
+  const grid = document.getElementById('slotsGrid');
+  document.getElementById('slotsTitle').textContent = monthNames[currentMonth]+' '+d+' · Available times';
+  grid.innerHTML = '';
+  // Show subset of times for the day
+  const dayTimes = times.filter((_,i) => (d+i)%3 !== 0).slice(0,9);
+  dayTimes.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className='slot-btn';
+    btn.textContent=t;
+    btn.onclick=()=>selectSlotTime(t,btn);
+    grid.appendChild(btn);
+  });
+  wrap.style.display='block';
+  document.getElementById('bookingFormWrap').style.display='none';
+  wrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function selectSlotTime(t, btn) {
+  selectedSlot = t;
+  document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('bookingFormWrap').style.display='block';
+  document.getElementById('bookingFormWrap').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function selectEvent(el, type) {
+  document.querySelectorAll('.event-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedEventType = type;
+}
+
+function confirmBooking() {
+  const fn = document.getElementById('fname').value.trim();
+  const ln = document.getElementById('lname').value.trim();
+  const em = document.getElementById('email').value.trim();
+  if(!fn||!em){showToast('Please fill in your name and email.');return;}
+  if(!selectedDay||!selectedSlot){showToast('Please select a date and time.');return;}
+  document.getElementById('confSession').textContent = selectedEventType==='intro'?'30-min intro call':'UX audit session';
+  document.getElementById('confDate').textContent = monthNames[currentMonth]+' '+selectedDay+', '+currentYear;
+  document.getElementById('confTime').textContent = selectedSlot;
+  document.getElementById('confEmail').textContent = em;
+  document.getElementById('bookingMain').style.display='none';
+  document.getElementById('confirmWrap').style.display='block';
+  document.getElementById('confirmWrap').scrollIntoView({behavior:'smooth'});
+}
+
+// ── UTILS ──
+function copyLink() {
+  navigator.clipboard.writeText('https://bookly.io/jordan').catch(()=>{});
+  showToast('✓ Link copied to clipboard');
+}
+
+function showAddEvent() {
+  openModal();
+}
+
+function openModal() { document.getElementById('modalBackdrop').classList.add('open'); }
+function closeModal() { document.getElementById('modalBackdrop').classList.remove('open'); }
+function closeModalOutside(e) { if(e.target===document.getElementById('modalBackdrop')) closeModal(); }
+function mockPay() { closeModal(); showToast('🎉 Connect Stripe to accept real payments! (Demo)'); }
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// Init
+renderCalendar();
+</script>
+</body>
+</html>
